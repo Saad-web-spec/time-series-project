@@ -1,0 +1,12 @@
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+data/
+*.csv
+*.json
+*.h5
+*.pkl
+.vscode/
+.idea/
