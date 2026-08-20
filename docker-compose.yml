@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # 1. The Feeder (Background Simulator & ML inference)
+  feeder:
+    build: .
+    command: python feeder.py
+    volumes:
+      - sqlite_data:/app
+    restart: unless-stopped
+
+  # 2. The FastAPI Backend
+  api:
+    build: .
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - sqlite_data:/app
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    depends_on:
+      - feeder
+
+  # 3. The Dash Dashboard
+  dash:
+    build: .
+    command: python dashboard.py
+    volumes:
+      - sqlite_data:/app
+    ports:
+      - "8050:8050"
+    restart: unless-stopped
+    depends_on:
+      - feeder
+
+  # 4. Enterprise SCADA (Grafana)
+  grafana:
+    image: grafana/grafana-enterprise
+    environment:
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - sqlite_data:/app
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    depends_on:
+      - feeder
+
+volumes:
+  sqlite_data:

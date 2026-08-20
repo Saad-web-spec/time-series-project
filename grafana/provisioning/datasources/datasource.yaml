@@ -1,0 +1,11 @@
+apiVersion: 1
+
+datasources:
+  - name: SQLite
+    type: frser-sqlite-datasource
+    uid: efvodrhdipybkf
+    access: proxy
+    isDefault: true
+    jsonData:
+      path: /app/telemetry.db
+    version: 1
